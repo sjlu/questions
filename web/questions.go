@@ -15,23 +15,20 @@ type Question struct {
 	Question string `json:"question"`
 }
 
-func GetQuestions(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
-
+func GetQuestions(c appengine.Context) ([]Question, error) {
 	q := datastore.NewQuery("question")
 
 	var questions []Question
 	keys, err := q.GetAll(c, &questions)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
 	for i := 0; i < len(questions); i++ {
 		questions[i].Id = keys[i].IntID()
 	}
 
-	json.NewEncoder(w).Encode(questions)
+	return questions, nil
 }
 
 func AddQuestion(w http.ResponseWriter, r *http.Request) {
