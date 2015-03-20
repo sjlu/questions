@@ -4,12 +4,13 @@ import (
 	"appengine"
 	"appengine/datastore"
 	"encoding/json"
-	"log"
+	// "log"
 	"net/http"
 )
 
 type Question struct {
-	Question string
+	Id       int64  `json:"id" datastore:"-"`
+	Question string `json:"question"`
 }
 
 func GetQuestions(w http.ResponseWriter, r *http.Request) {
@@ -18,25 +19,29 @@ func GetQuestions(w http.ResponseWriter, r *http.Request) {
 	q := datastore.NewQuery("question")
 
 	var questions []Question
-	q.GetAll(c, &questions)
+	keys, err := q.GetAll(c, &questions)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-	log.Println(questions)
+	for i := 0; i < len(questions); i++ {
+		questions[i].Id = keys[i].IntID()
+	}
 
 	json.NewEncoder(w).Encode(questions)
 }
 
 func AddQuestion(w http.ResponseWriter, r *http.Request) {
-	vars := r.Form
-
-	log.Println(vars)
-
 	c := appengine.NewContext(r)
-	q := Question{
-		Question: r.FormValue("question"),
-	}
 
-	_, err := datastore.Put(c, datastore.NewIncompleteKey(c, "question", nil), &q)
+	var q Question
+	err := json.NewDecoder(r.Body).Decode(&q)
+
+	_, err = datastore.Put(c, datastore.NewIncompleteKey(c, "question", nil), &q)
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	json.NewEncoder(w).Encode(q)
