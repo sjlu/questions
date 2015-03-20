@@ -4,7 +4,7 @@ import (
 	"appengine"
 	"appengine/datastore"
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -15,14 +15,29 @@ type Question struct {
 func GetQuestions(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 
-	q := datastore.NewQuery("Question")
+	q := datastore.NewQuery("question")
 
 	var questions []Question
 	q.GetAll(c, &questions)
+
+	log.Println(questions)
 
 	json.NewEncoder(w).Encode(questions)
 }
 
 func AddQuestion(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "got here")
+	vars := r.Form
+
+	log.Println(vars)
+
+	c := appengine.NewContext(r)
+	q := Question{
+		Question: r.FormValue("question"),
+	}
+
+	_, err := datastore.Put(c, datastore.NewIncompleteKey(c, "question", nil), &q)
+	if err != nil {
+	}
+
+	json.NewEncoder(w).Encode(q)
 }
