@@ -1,0 +1,77 @@
+div.section-body
+  div.section-column.row
+    div.col-sm-4
+      div.section-column-header
+        | Categories
+      div.small
+        | Please select what topic(s) this question belongs to. You may select more than 1.
+    div.col-sm-8
+      div.col-sm-12
+        select.form-control.input-lg(ng-model="selectedCategory" ng-change="addCategory()" ng-options="c.name for c in categories")
+        br
+        ul.categories-list.semipadded
+          li(ng-repeat="c in questionCategories")
+            | {{c.name}}&nbsp;&nbsp;
+            a.btn.btn-xs.btn-danger(ng-click="removeCategory(c)")
+              | remove
+  div.section-column.row
+    div.col-sm-4
+      div.section-column-header
+        | Question
+        div.small
+          | What will you be asking?
+    div.col-sm-8
+      div.col-sm-12
+        textarea.form-control(rows="3" ng-model="question.question")
+  hr
+  div.section-column.row
+    div.col-sm-4
+      div.section-column-header
+        | Answers
+        div.small
+          | Provide 4 different answer choices. Select the bubble next to the right answer choice.
+    div.col-sm-8
+      div.col-sm-12
+        table
+          tr
+            td
+              input(type="radio" name="correct_answer" value="answer_1" ng-model="question.correct_answer")
+            td
+              input.form-control(type="text", ng-model="question.answer_1")
+      div.col-sm-12
+        table
+          tr
+            td
+              input(type="radio" name="correct_answer" value="answer_2" ng-model="question.correct_answer")
+            td
+              input.form-control(type="text", ng-model="question.answer_2")
+      div.col-sm-12
+        table
+          tr
+            td
+              input(type="radio" name="correct_answer" value="answer_3" ng-model="question.correct_answer")
+            td
+              input.form-control(type="text", ng-model="question.answer_3")
+      div.col-sm-12
+        table
+          tr
+            td
+              input(type="radio" name="correct_answer" value="answer_4" ng-model="question.correct_answer")
+            td
+              input.form-control(type="text", ng-model="question.answer_4")
+  hr
+  div.section-column.row
+    div.col-sm-4
+      div.section-column-header
+        | Explanation
+        div.small
+          | Provide an explanation as to why one answer is the best answer. Include why each of the other answer choices is incorrect.
+    div.col-sm-8
+      div.col-sm-12
+        textarea.form-control(rows="3" ng-model="question.explanation")
+  div.section-column.row
+    div.col-sm-12
+      button.btn.btn-primary(ng-click="save()" ng-hide="question.id")
+        | Create
+      button.btn.btn-primary(ng-click="save()" ng-show="question.id")
+        | Save

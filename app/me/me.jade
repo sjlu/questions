@@ -1,0 +1,36 @@
+div.section-body
+  div.section-column.row
+    div.col-sm-4
+      div.section-column-header
+        | Username
+        div.small
+          | This is your screen name.
+    div.col-sm-8
+      div.col-sm-12
+        input.input-lg.form-control(type="text", disabled="true", ng-model="user.username")
+  hr
+  div.section-column.row
+    div.col-sm-4
+      div.section-column-header
+        | Name
+        div.small
+          | What shall we call you?
+    div.col-sm-8
+      div.col-sm-6
+        input.input-lg.form-control(type="text", ng-model="user.firstname", placeholder="First name")
+      div.col-sm-6
+        input.input-lg.form-control(type="text", ng-model="user.lastname", placeholder="Last name")
+  hr
+  div.section-column.row
+    div.col-sm-4
+      div.section-column-header
+        | Email
+        div.small
+          | Where can we notify you?
+    div.col-sm-8
+      div.col-sm-12
+        input.input-lg.form-control(type="email", disabled="true", ng-model="user.email")
+  div.section-column.row
+    div.col-sm-12
+      button.btn.btn-primary(ng-click="save()")
+        | Save

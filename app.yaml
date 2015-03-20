@@ -8,15 +8,17 @@ handlers:
   static_files: app\1/index.html
   upload: app
   login: required
-- url: /app(.*)
-  static_files: app\1
-  upload: app
-  login: required
-- url: /static
-  static_dir: static
+- url: /public
+  static_dir: public
 - url: /api(.*)
   login: required
   auth_fail_action: unauthorized
   script: _go_app
 - url: /.*
   script: _go_app
+
+skip_files:
+  - bower_components
+  - node_modules
+  - stylesheets
+  - app

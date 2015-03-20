@@ -1,0 +1,91 @@
+div.questions
+  div.question
+    div.clearfix
+      a.btn.btn-link.pull-right(href="#/questions/edit/{{question.id}}")
+        | Edit
+    div.datablock
+      div.small
+        | ID
+      | {{question.id}}
+    br
+    div.datablock
+      div.small
+        | State
+      div.label(ng-class="{'label-primary':question.state === 'new', 'label-danger':question.state === 'rejected', 'label-success':question.state === 'published'}")
+        | {{question.state}}
+    br
+    div.datablock
+      div.small
+        | Owner
+      | {{question.user.username}}
+    br
+    div.datablock
+      div.small
+        | Categories
+      ul.unpadded
+        li(ng-repeat="c in question.categories")
+          | {{c.name}}
+    hr
+    div.datablock
+      div.small
+        | Question
+      | {{question.question}}
+    hr
+    div.datablock(ng-show="question.answer_1")
+      div.small
+        | Answer 1
+        | &nbsp;
+        i.fa.fa-check(ng-show="question.correct_answer === 'answer_1'")
+      | {{question.answer_1}}
+    div.datablock(ng-show="question.answer_2")
+      br
+      div.small
+        | Answer 2
+        | &nbsp;
+        i.fa.fa-check(ng-show="question.correct_answer === 'answer_2'")
+      | {{question.answer_2}}
+    div.datablock(ng-show="question.answer_3")
+      br
+      div.small
+        | Answer 3
+        | &nbsp;
+        i.fa.fa-check(ng-show="question.correct_answer === 'answer_3'")
+      | {{question.answer_3}}
+    div.datablock(ng-show="question.answer_4")
+      br
+      div.small
+        | Answer 4
+        | &nbsp;
+        i.fa.fa-check(ng-show="question.correct_answer === 'answer_4'")
+      | {{question.answer_4}}
+    div.datablock(ng-show="question.answer_5")
+      br
+      div.small
+        | Answer 5
+        | &nbsp;
+        i.fa.fa-check(ng-show="question.correct_answer === 'answer_5'")
+      | {{question.answer_5}}
+    br
+    div.datablock
+      div.small
+        | Explanation
+      | {{question.explanation}}
+    hr
+    div.datablock
+      div.small
+        | Comments
+    div.row
+      div.col-sm-8
+        div.comment(ng-repeat="comment in comments")
+          table
+            tr
+              td
+                img(ng-src="{{comment.user.gravatar}}")
+              td
+                div.text
+                  | {{comment.comment}}
+                div.timestamp
+                  | {{comment.user.name}} {{comment.createdAt}}
+        textarea.form-control(rows="3" ng-keypress="detectSubmit($event)" ng-model="comment" ng-disabled="commentInputDisabled")
+    br
+    br

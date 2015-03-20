@@ -1,0 +1,25 @@
+div.questions
+  div.panel.panel-default
+    div.panel-heading.clearfix
+      table
+        tr
+          td
+            h3.panel-title
+              | Questions
+          td.text-right
+            a.btn.btn-primary.btn-xs(href="#/questions/create")
+              | Create a question
+    table.table.table-bordered
+      tbody
+        tr(ng-repeat="q in questions")
+          td.text-right
+            strong
+              | \#{{q.id}}
+          td
+            | {{q.question}}
+          td
+            a.action(href="#/questions/view/{{q.id}}")
+              | View
+            | &nbsp;&middot;&nbsp;
+            a.action(href="#/questions/edit/{{q.id}}")
+              | Edit

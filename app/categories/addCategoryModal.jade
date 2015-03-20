@@ -1,0 +1,16 @@
+div.modal-header
+  h4.modal-title
+    | Add Subcategory
+div.modal-body
+  div.datablock
+    div.small
+      | Category
+    | {{category.name}}
+  br
+  div.datablock
+    div.small
+      | Subcategory
+  select.form-control(ng-model="selected" ng-options="c.name for c in categories")
+div.modal-footer
+  button.btn.btn-primary(type="submit" ng-click="add()")
+    | Add
