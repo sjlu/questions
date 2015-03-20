@@ -1,8 +1,14 @@
-application: testable-web
+application: testable
 version: 1
 runtime: go
 api_version: go1
 
 handlers:
-- url: /.*
-  script: _go_app
+- url: /api(.*)
+  script: api
+- url: /app(.*)/
+  static_files: app\1/index.html
+  upload: app
+- url: /app(.*)
+  static_files: app\1
+  upload: app
