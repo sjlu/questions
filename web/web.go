@@ -1,16 +1,13 @@
 package web
 
 import (
-	// "appengine"
-	// "appengine/user"
-	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 )
 
 func init() {
-	http.HandleFunc("/api", newHandler)
-}
-
-func newHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Rawr")
+	r := mux.NewRouter()
+	r.HandleFunc("/api/questions", GetQuestions).Methods("GET")
+	r.HandleFunc("/api/questions", AddQuestion).Methods("POST")
+	http.Handle("/", r)
 }
