@@ -5,7 +5,9 @@ import (
 	"appengine/datastore"
 	"encoding/json"
 	// "log"
+	"github.com/gorilla/mux"
 	"net/http"
+	"strconv"
 )
 
 type Question struct {
@@ -45,4 +47,27 @@ func AddQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(q)
+}
+
+func GetQuestion(w http.ResponseWriter, r *http.Request) {
+	c := appengine.NewContext(r)
+	vars := mux.Vars(r)
+
+	id, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	k := datastore.NewKey(c, "question", "", id, nil)
+	var question Question
+	err = datastore.Get(c, k, &question)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	question.Id = id
+
+	json.NewEncoder(w).Encode(question)
 }
