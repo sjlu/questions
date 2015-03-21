@@ -30,6 +30,10 @@ func (q *Question) key(c appengine.Context) *datastore.Key {
 }
 
 func (q *Question) save(c appengine.Context) error {
+	if q.State == "" {
+		q.State = "new"
+	}
+
 	_, err := govalidator.ValidateStruct(q)
 	if err != nil {
 		return err
