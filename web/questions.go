@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	// "log"
 	"github.com/gorilla/mux"
+	"io"
 	"net/http"
 	"strconv"
 )
@@ -31,19 +32,23 @@ func GetQuestions(c appengine.Context) ([]Question, error) {
 	return questions, nil
 }
 
-func AddQuestion(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
+func NewQuestion(c appengine.Context, r io.ReadCloser) (*Question, error) {
 
-	var q Question
-	err := json.NewDecoder(r.Body).Decode(&q)
-
-	_, err = datastore.Put(c, datastore.NewIncompleteKey(c, "question", nil), &q)
+	var question Question
+	err := json.NewDecoder(r).Decode(&question)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
-	json.NewEncoder(w).Encode(q)
+	key, err := datastore.Put(c, datastore.NewIncompleteKey(c, "question", nil), &question)
+	if err != nil {
+		return nil, err
+	}
+
+	question.Id = key.IntID()
+
+	return &question, nil
+
 }
 
 func GetQuestion(w http.ResponseWriter, r *http.Request) {
