@@ -8,12 +8,37 @@ import (
 )
 
 type Question struct {
-	Id       int64  `json:"id" datastore:"-"`
-	Question string `json:"question"`
+	Id            int64  `json:"id" datastore:"-"`
+	Question      string `json:"question"`
+	Answer1       string `json:"answer_1"`
+	Answer2       string `json:"answer_2"`
+	Answer3       string `json:"answer_3"`
+	Answer4       string `json:"answer_4"`
+	Answer5       string `json:"answer_5"`
+	Explanation   string `json:"explanation"`
+	CorrectAnswer string `json:"correct_answer"`
+	State         string `json:"state"`
+}
+
+func (q *Question) key(c appengine.Context) *datastore.Key {
+	if q.Id == 0 {
+		return datastore.NewIncompleteKey(c, "Question", nil)
+	}
+	return datastore.NewKey(c, "Question", "", q.Id, nil)
+}
+
+func (q *Question) save(c appengine.Context) error {
+	k, err := datastore.Put(c, q.key(c), q)
+	if err != nil {
+		return err
+	}
+
+	q.Id = k.IntID()
+	return nil
 }
 
 func GetQuestions(c appengine.Context) ([]Question, error) {
-	q := datastore.NewQuery("question")
+	q := datastore.NewQuery("Question")
 
 	var questions []Question
 	keys, err := q.GetAll(c, &questions)
@@ -36,12 +61,10 @@ func NewQuestion(c appengine.Context, r io.ReadCloser) (*Question, error) {
 		return nil, err
 	}
 
-	key, err := datastore.Put(c, datastore.NewIncompleteKey(c, "question", nil), &question)
+	err = question.save(c)
 	if err != nil {
 		return nil, err
 	}
-
-	question.Id = key.IntID()
 
 	return &question, nil
 
@@ -50,7 +73,9 @@ func NewQuestion(c appengine.Context, r io.ReadCloser) (*Question, error) {
 func GetQuestion(c appengine.Context, id int64) (*Question, error) {
 
 	var question Question
-	k := datastore.NewKey(c, "question", "", id, nil)
+	question.Id = id
+
+	k := question.key(c)
 	err := datastore.Get(c, k, &question)
 	if err != nil {
 		return nil, err
