@@ -4,20 +4,22 @@ import (
 	"appengine"
 	"appengine/datastore"
 	"encoding/json"
+	"errors"
+	"github.com/asaskevich/govalidator"
 	"io"
 )
 
 type Question struct {
 	Id            int64  `json:"id" datastore:"-"`
-	Question      string `json:"question"`
-	Answer1       string `json:"answer_1"`
+	Question      string `json:"question" valid:"required"`
+	Answer1       string `json:"answer_1" valid:"required"`
 	Answer2       string `json:"answer_2"`
 	Answer3       string `json:"answer_3"`
 	Answer4       string `json:"answer_4"`
 	Answer5       string `json:"answer_5"`
-	Explanation   string `json:"explanation"`
-	CorrectAnswer string `json:"correct_answer"`
-	State         string `json:"state"`
+	Explanation   string `json:"explanation" valid:"required"`
+	CorrectAnswer string `json:"correct_answer" valid:"required"`
+	State         string `json:"state" valid:"required"`
 }
 
 func (q *Question) key(c appengine.Context) *datastore.Key {
@@ -28,6 +30,23 @@ func (q *Question) key(c appengine.Context) *datastore.Key {
 }
 
 func (q *Question) save(c appengine.Context) error {
+	_, err := govalidator.ValidateStruct(q)
+	if err != nil {
+		return err
+	}
+
+	if q.State != "new" {
+		return errors.New("state is invalid")
+	}
+
+	if q.CorrectAnswer != "answer_1" &&
+		q.CorrectAnswer != "answer_2" &&
+		q.CorrectAnswer != "answer_3" &&
+		q.CorrectAnswer != "answer_4" &&
+		q.CorrectAnswer != "answer_5" {
+		return errors.New("correct_answer is invalid")
+	}
+
 	k, err := datastore.Put(c, q.key(c), q)
 	if err != nil {
 		return err
