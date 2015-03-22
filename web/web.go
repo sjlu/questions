@@ -4,20 +4,24 @@ import (
 	"appengine"
 	"appengine/urlfetch"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/sessions"
 	"github.com/stretchr/gomniauth"
 	"github.com/stretchr/gomniauth/common"
 	"github.com/stretchr/gomniauth/providers/facebook"
 	"github.com/stretchr/objx"
+	"log"
 	"net/http"
 	"strconv"
 )
+
+var store = sessions.NewCookieStore([]byte("yftcK6tjjW257QkwHuaqUHe8sj3s83Ky"))
 
 func init() {
 
 	r := gin.New()
 	gin.SetMode(gin.ReleaseMode)
 
-	gomniauth.SetSecurityKey("hlhi23o9fhlASdfaSDf078923oifsASDFAsdf8973r28y2y8")
+	gomniauth.SetSecurityKey("mJ8zwRBQZqvakN2BT6CuVKQD8gxYXW8X")
 	gomniauth.WithProviders(
 		facebook.New(
 			"1616407611915270",
@@ -43,7 +47,7 @@ func init() {
 			return
 		}
 
-		c.Redirect(http.StatusFound, authUrl)
+		c.Redirect(http.StatusTemporaryRedirect, authUrl)
 	})
 	login.GET("/callback", func(c *gin.Context) {
 		t := new(urlfetch.Transport)
@@ -68,10 +72,27 @@ func init() {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"email": user.Email()})
+		session, err := store.Get(c.Request, "testable")
+		session.Values["email"] = user.Email()
+		session.Save(c.Request, c.Writer)
+
+		c.Redirect(http.StatusTemporaryRedirect, "/")
 	})
 
 	api := r.Group("/api")
+	api.Use(func(c *gin.Context) {
+		session, err := store.Get(c.Request, "testable")
+
+		if session.Values["email"] == nil {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+	})
 	api.GET("/questions", func(c *gin.Context) {
 		questions, err := GetQuestions(appengine.NewContext(c.Request))
 		if err != nil {
