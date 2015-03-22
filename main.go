@@ -1,4 +1,4 @@
-package web
+package main
 
 import (
 	"appengine"
@@ -10,7 +10,9 @@ import (
 	"github.com/stretchr/gomniauth/providers/facebook"
 	"github.com/stretchr/objx"
 	"html/template"
+	"models"
 	"net/http"
+	"routes"
 	"strconv"
 )
 
@@ -96,6 +98,21 @@ func init() {
 		session.Values["email"] = user.Email()
 		session.Save(c.Request, c.Writer)
 
+		c.JSON(http.StatusOK, user.Data())
+
+		id, err := strconv.ParseInt(user.IDForProvider("facebook"), 10, 64)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+		name := user.Name()
+		email := user.Email()
+
+		_, err = models.CreateUser(appengine.NewContext(c.Request), id, name, email)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
 		c.Redirect(http.StatusTemporaryRedirect, "/app")
 	})
 
@@ -117,57 +134,9 @@ func init() {
 			return
 		}
 	})
-	api.GET("/questions", func(c *gin.Context) {
-		questions, err := GetQuestions(appengine.NewContext(c.Request))
-		if err != nil {
-			c.String(http.StatusInternalServerError, err.Error())
-			return
-		}
 
-		c.JSON(http.StatusOK, questions)
-	})
-	api.GET("/questions/:id", func(c *gin.Context) {
-		id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 64)
-		if err != nil {
-			c.String(http.StatusInternalServerError, err.Error())
-			return
-		}
-
-		question, err := GetQuestion(appengine.NewContext(c.Request), id)
-
-		if err != nil {
-			c.String(http.StatusInternalServerError, err.Error())
-			return
-		}
-
-		c.JSON(http.StatusOK, question)
-	})
-	api.POST("/questions", func(c *gin.Context) {
-		question, err := NewQuestion(appengine.NewContext(c.Request), c.Request.Body)
-		if err != nil {
-			c.String(http.StatusInternalServerError, err.Error())
-			return
-		}
-		c.JSON(http.StatusOK, question)
-	})
-
-	api.GET("/categories", func(c *gin.Context) {
-		categories, err := GetCategories(appengine.NewContext(c.Request))
-		if err != nil {
-			c.String(http.StatusInternalServerError, err.Error())
-			return
-		}
-
-		c.JSON(http.StatusOK, categories)
-	})
-	api.POST("/categories", func(c *gin.Context) {
-		category, err := NewCategory(appengine.NewContext(c.Request), c.Request.Body)
-		if err != nil {
-			c.String(http.StatusInternalServerError, err.Error())
-			return
-		}
-		c.JSON(http.StatusOK, category)
-	})
+	routes.CategoryRouter(api.Group("/categories"))
+	routes.QuestionRouter(api.Group("/questions"))
 
 	http.Handle("/", r)
 }
