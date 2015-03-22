@@ -12,6 +12,8 @@ import (
 type Question struct {
 	Id            int64   `json:"id" datastore:"-"`
 	CategoryIds   []int64 `json:"category_ids"`
+	UserId        int64   `json:"user_id"`
+	User          *User   `json:"user" datastore:"-"`
 	Question      string  `json:"question" valid:"required"`
 	Answer1       string  `json:"answer_1" valid:"required"`
 	Answer2       string  `json:"answer_2"`
@@ -77,13 +79,15 @@ func GetQuestions(c appengine.Context) ([]Question, error) {
 	return questions, nil
 }
 
-func NewQuestion(c appengine.Context, r io.ReadCloser) (*Question, error) {
+func NewQuestion(c appengine.Context, r io.ReadCloser, user *User) (*Question, error) {
 
 	var question Question
 	err := json.NewDecoder(r).Decode(&question)
 	if err != nil {
 		return nil, err
 	}
+
+	question.UserId = user.Id
 
 	err = question.save(c)
 	if err != nil {
@@ -106,6 +110,14 @@ func GetQuestion(c appengine.Context, id int64) (*Question, error) {
 	}
 
 	question.Id = k.IntID()
+
+	if question.UserId != 0 {
+		user, err := GetUser(c, question.UserId)
+		if err != nil {
+			return nil, err
+		}
+		question.User = user
+	}
 
 	return &question, nil
 

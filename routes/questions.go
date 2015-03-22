@@ -26,7 +26,6 @@ func QuestionRouter(router *gin.RouterGroup) {
 		}
 
 		question, err := models.GetQuestion(appengine.NewContext(c.Request), id)
-
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
@@ -35,7 +34,9 @@ func QuestionRouter(router *gin.RouterGroup) {
 		c.JSON(http.StatusOK, question)
 	})
 	router.POST("/", func(c *gin.Context) {
-		question, err := models.NewQuestion(appengine.NewContext(c.Request), c.Request.Body)
+		user := GetUserFromContext(c)
+
+		question, err := models.NewQuestion(appengine.NewContext(c.Request), c.Request.Body, user)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return

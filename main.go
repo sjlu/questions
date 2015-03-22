@@ -30,7 +30,7 @@ func init() {
 			return
 		}
 
-		if session.Values["email"] == nil {
+		if session.Values["id"] == 0 {
 			c.Redirect(http.StatusTemporaryRedirect, "/login")
 			return
 		}
@@ -90,16 +90,6 @@ func init() {
 			return
 		}
 
-		session, err := store.Get(c.Request, "testable")
-		if err != nil {
-			c.String(http.StatusInternalServerError, err.Error())
-			return
-		}
-		session.Values["email"] = user.Email()
-		session.Save(c.Request, c.Writer)
-
-		c.JSON(http.StatusOK, user.Data())
-
 		id, err := strconv.ParseInt(user.IDForProvider("facebook"), 10, 64)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
@@ -113,6 +103,15 @@ func init() {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
 		}
+
+		session, err := store.Get(c.Request, "testable")
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+		session.Values["id"] = id
+		session.Save(c.Request, c.Writer)
+
 		c.Redirect(http.StatusTemporaryRedirect, "/app")
 	})
 
@@ -124,15 +123,19 @@ func init() {
 			return
 		}
 
-		if session.Values["email"] == nil {
+		if session.Values["id"] == nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
+		id := session.Values["id"].(int64)
+		user, err := models.GetUser(appengine.NewContext(c.Request), id)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
 		}
+
+		c.Set("user", user)
 	})
 
 	routes.CategoryRouter(api.Group("/categories"))
