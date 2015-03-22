@@ -3,19 +3,19 @@ package web
 import (
 	"appengine"
 	"appengine/urlfetch"
-	"encoding/json"
-	"fmt"
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/gomniauth"
 	"github.com/stretchr/gomniauth/common"
 	"github.com/stretchr/gomniauth/providers/facebook"
 	"github.com/stretchr/objx"
-	"io"
 	"net/http"
 	"strconv"
 )
 
 func init() {
+
+	r := gin.New()
+	gin.SetMode(gin.ReleaseMode)
 
 	gomniauth.SetSecurityKey("hlhi23o9fhlASdfaSDf078923oifsASDFAsdf8973r28y2y8")
 	gomniauth.WithProviders(
@@ -25,139 +25,104 @@ func init() {
 			"http://localhost:8080/login/callback",
 		),
 	)
-
-	r := mux.NewRouter()
-	r.HandleFunc("/api/questions", getQuestions).Methods("GET")
-	r.HandleFunc("/api/questions", newQuestion).Methods("POST")
-	r.HandleFunc("/api/questions/{id:[0-9]+}", getQuestion).Methods("GET")
-	r.HandleFunc("/api/categories", getCategories).Methods("GET")
-	r.HandleFunc("/api/categories", newCategory).Methods("POST")
-	r.HandleFunc("/login", loginHandler())
-	r.HandleFunc("/login/callback", callbackHandler())
-	http.Handle("/", r)
-
-}
-
-func loginHandler() http.HandlerFunc {
 	provider, err := gomniauth.Provider("facebook")
 	if err != nil {
 		panic(err)
 	}
-	return func(w http.ResponseWriter, r *http.Request) {
-		c := appengine.NewContext(r)
+
+	login := r.Group("/login")
+	login.GET("/", func(c *gin.Context) {
 		t := new(urlfetch.Transport)
-		t.Context = c
+		t.Context = appengine.NewContext(c.Request)
 		common.SetRoundTripper(t)
 
 		state := gomniauth.NewState("after", "success")
 		authUrl, err := provider.GetBeginAuthURL(state, nil)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			c.String(http.StatusInternalServerError, err.Error())
 			return
 		}
 
-		http.Redirect(w, r, authUrl, http.StatusFound)
-	}
-}
-
-func callbackHandler() http.HandlerFunc {
-	provider, err := gomniauth.Provider("facebook")
-	if err != nil {
-		panic(err)
-	}
-	return func(w http.ResponseWriter, r *http.Request) {
-		c := appengine.NewContext(r)
+		c.Redirect(http.StatusFound, authUrl)
+	})
+	login.GET("/callback", func(c *gin.Context) {
 		t := new(urlfetch.Transport)
-		t.Context = c
+		t.Context = appengine.NewContext(c.Request)
 		common.SetRoundTripper(t)
 
-		omap, err := objx.FromURLQuery(r.URL.RawQuery)
+		omap, err := objx.FromURLQuery(c.Request.URL.RawQuery)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			c.String(http.StatusInternalServerError, err.Error())
 			return
 		}
 
 		creds, err := provider.CompleteAuth(omap)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			c.String(http.StatusInternalServerError, err.Error())
 			return
 		}
 
 		user, err := provider.GetUser(creds)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			c.String(http.StatusInternalServerError, err.Error())
 			return
 		}
 
-		data := fmt.Sprintf("%#v", user)
-		io.WriteString(w, data)
+		c.JSON(http.StatusOK, gin.H{"email": user.Email()})
+	})
 
-	}
-}
+	api := r.Group("/api")
+	api.GET("/questions", func(c *gin.Context) {
+		questions, err := GetQuestions(appengine.NewContext(c.Request))
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
 
-func getQuestions(w http.ResponseWriter, r *http.Request) {
+		c.JSON(http.StatusOK, questions)
+	})
+	api.GET("/questions/:id", func(c *gin.Context) {
+		id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 64)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
 
-	questions, err := GetQuestions(appengine.NewContext(r))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+		question, err := GetQuestion(appengine.NewContext(c.Request), id)
 
-	json.NewEncoder(w).Encode(questions)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
 
-}
+		c.JSON(http.StatusOK, question)
+	})
+	api.POST("/questions", func(c *gin.Context) {
+		question, err := NewQuestion(appengine.NewContext(c.Request), c.Request.Body)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+		c.JSON(http.StatusOK, question)
+	})
 
-func newQuestion(w http.ResponseWriter, r *http.Request) {
+	api.GET("/categories", func(c *gin.Context) {
+		categories, err := GetCategories(appengine.NewContext(c.Request))
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
 
-	question, err := NewQuestion(appengine.NewContext(r), r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	json.NewEncoder(w).Encode(question)
+		c.JSON(http.StatusOK, categories)
+	})
+	api.POST("/categories", func(c *gin.Context) {
+		category, err := NewCategory(appengine.NewContext(c.Request), c.Request.Body)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+		c.JSON(http.StatusOK, category)
+	})
 
-}
-
-func getQuestion(w http.ResponseWriter, r *http.Request) {
-
-	vars := mux.Vars(r)
-
-	id, err := strconv.ParseInt(vars["id"], 10, 64)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	question, err := GetQuestion(appengine.NewContext(r), id)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	json.NewEncoder(w).Encode(question)
-
-}
-
-func newCategory(w http.ResponseWriter, r *http.Request) {
-
-	category, err := NewCategory(appengine.NewContext(r), r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	json.NewEncoder(w).Encode(category)
-
-}
-
-func getCategories(w http.ResponseWriter, r *http.Request) {
-
-	topics, err := GetCategories(appengine.NewContext(r))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	json.NewEncoder(w).Encode(topics)
-
+	http.Handle("/", r)
 }
