@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/gomniauth/common"
 	"github.com/stretchr/gomniauth/providers/facebook"
 	"github.com/stretchr/objx"
-	"log"
+	"html/template"
 	"net/http"
 	"strconv"
 )
@@ -20,6 +20,22 @@ func init() {
 
 	r := gin.New()
 	gin.SetMode(gin.ReleaseMode)
+
+	r.GET("/app", func(c *gin.Context) {
+		session, err := store.Get(c.Request, "testable")
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		if session.Values["email"] == nil {
+			c.Redirect(http.StatusTemporaryRedirect, "/login")
+			return
+		}
+
+		r.SetHTMLTemplate(template.Must(template.ParseFiles("templates/layout.tmpl", "templates/app.tmpl")))
+		c.HTML(200, "layout", nil)
+	})
 
 	gomniauth.SetSecurityKey("mJ8zwRBQZqvakN2BT6CuVKQD8gxYXW8X")
 	gomniauth.WithProviders(
@@ -73,15 +89,23 @@ func init() {
 		}
 
 		session, err := store.Get(c.Request, "testable")
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
 		session.Values["email"] = user.Email()
 		session.Save(c.Request, c.Writer)
 
-		c.Redirect(http.StatusTemporaryRedirect, "/")
+		c.Redirect(http.StatusTemporaryRedirect, "/app")
 	})
 
 	api := r.Group("/api")
 	api.Use(func(c *gin.Context) {
 		session, err := store.Get(c.Request, "testable")
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
 
 		if session.Values["email"] == nil {
 			c.AbortWithStatus(http.StatusUnauthorized)

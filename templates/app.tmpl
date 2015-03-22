@@ -1,0 +1,22 @@
+{{define "body"}}
+<div ng-app="app">
+  <div class="topbar">
+    <div class="container">
+      <div class="col-md-offset-2 col-md-8">
+        <div topbar></div>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="col-md-offset-2 col-md-8">
+      <div ng-view></div>
+    </div>
+  </div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script src="/public/build/templates.js"></script>
+<script>window.app = angular.module('app', ['ngRoute', 'ui.bootstrap', 'templates']);</script>
+<script src="/public/build/app.js"></script>
+{{end}}
