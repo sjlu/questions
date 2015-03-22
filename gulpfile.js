@@ -30,7 +30,7 @@ var bowercopy = [
 ]
 
 var prefix = function(b) {
-  return './bower_components/' + b;
+  return 'bower_components/' + b;
 }
 
 bowerjs = _.map(bowerjs, prefix);
@@ -38,7 +38,7 @@ bowercopy = _.map(bowercopy, prefix);
 
 gulp.task('stylus', function() {
   gulp
-    .src('./stylesheets/styles.styl')
+    .src('stylesheets/styles.styl')
     .pipe(plumber())
     .pipe(stylus({
       compress: true,
@@ -56,21 +56,21 @@ gulp.task('stylus', function() {
       includeContent: false,
       sourceRoot: '.'
     }))
-    .pipe(gulp.dest('./public/build'))
+    .pipe(gulp.dest('public/build'))
 });
 
 gulp.task('less', function() {
   gulp
-    .src('./stylesheets/bootstrap.less')
+    .src('stylesheets/bootstrap.less')
     .pipe(plumber())
     .pipe(less())
     .pipe(minifyCSS())
-    .pipe(gulp.dest('./public/build'))
+    .pipe(gulp.dest('public/build'))
 });
 
 gulp.task('html', function() {
   gulp
-    .src('./app/**/*.jade')
+    .src('app/**/*.jade')
     .pipe(plumber())
     .pipe(jade({
       doctype: 'html'
@@ -82,30 +82,30 @@ gulp.task('html', function() {
         return path.basename(file.path);
       }
     }))
-    .pipe(gulp.dest('./public/build'))
+    .pipe(gulp.dest('public/build'))
 });
 
 gulp.task('js', function() {
   gulp
-    .src('./app/**/*.js')
+    .src('app/**/*.js')
     .pipe(plumber())
     .pipe(uglify('app.js', {
       mangle: false,
       outSourceMap: true
     }))
-    .pipe(gulp.dest('./public/build'))
+    .pipe(gulp.dest('public/build'))
 })
 
 gulp.task('concat', function() {
   gulp
     .src(bowerjs)
     .pipe(concat('bower.js'))
-    .pipe(gulp.dest('./public/build'))
+    .pipe(gulp.dest('public/build'))
 })
 
 gulp.task('copy', function() {
   _.each(bowercopy, function(f) {
-    var dest = './public/build/';
+    var dest = 'public/build/';
     var src = f;
 
     if (fs.lstatSync(f).isDirectory()) {
@@ -135,14 +135,14 @@ gulp.task('watch', function() {
   }
 
   var paths = [
-    './stylesheets/**/*.styl',
-    './stylesheets/bootstrap.less',
-    './views/*'
+    'stylesheets/**/*.styl',
+    'stylesheets/bootstrap.less',
+    'views/*'
   ];
 
-  paths.push('./app/**/*.js');
-  paths.push('./app/**/*.jade');
-  paths.push('./app/**/*.styl');
+  paths.push('app/**/*.js');
+  paths.push('app/**/*.jade');
+  paths.push('app/**/*.styl');
 
   _.each(paths, function(path) {
     watch(path, changed);

@@ -7,10 +7,6 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
     '/questions/create': 'modifyQuestion',
     '/questions/view/:id': 'viewQuestion',
     '/questions/edit/:id': 'modifyQuestion',
-    '/categories': 'listCategories',
-    '/categories/create': 'modifyCategory',
-    '/categories/edit/:id': 'modifyCategory',
-    '/me': 'me'
   };
 
   for (var route in routes) {

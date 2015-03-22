@@ -10,16 +10,17 @@ import (
 )
 
 type Question struct {
-	Id            int64  `json:"id" datastore:"-"`
-	Question      string `json:"question" valid:"required"`
-	Answer1       string `json:"answer_1" valid:"required"`
-	Answer2       string `json:"answer_2"`
-	Answer3       string `json:"answer_3"`
-	Answer4       string `json:"answer_4"`
-	Answer5       string `json:"answer_5"`
-	Explanation   string `json:"explanation" valid:"required"`
-	CorrectAnswer string `json:"correct_answer" valid:"required"`
-	State         string `json:"state" valid:"required"`
+	Id            int64   `json:"id" datastore:"-"`
+	CategoryIds   []int64 `json:"category_ids"`
+	Question      string  `json:"question" valid:"required"`
+	Answer1       string  `json:"answer_1" valid:"required"`
+	Answer2       string  `json:"answer_2"`
+	Answer3       string  `json:"answer_3"`
+	Answer4       string  `json:"answer_4"`
+	Answer5       string  `json:"answer_5"`
+	Explanation   string  `json:"explanation" valid:"required"`
+	CorrectAnswer string  `json:"correct_answer" valid:"required"`
+	State         string  `json:"state" valid:"required"`
 }
 
 func (q *Question) key(c appengine.Context) *datastore.Key {
