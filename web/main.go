@@ -10,10 +10,10 @@ import (
 	"github.com/stretchr/gomniauth/providers/facebook"
 	"github.com/stretchr/objx"
 	"html/template"
-	"models"
 	"net/http"
-	"routes"
 	"strconv"
+	"web/models"
+	"web/routes"
 )
 
 var store = sessions.NewCookieStore([]byte("yftcK6tjjW257QkwHuaqUHe8sj3s83Ky"))

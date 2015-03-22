@@ -2,8 +2,8 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"models"
 	"net/http"
+	"web/models"
 )
 
 func GetUserFromContext(c *gin.Context) *models.User {

@@ -3,8 +3,8 @@ package routes
 import (
 	"appengine"
 	"github.com/gin-gonic/gin"
-	"models"
 	"net/http"
+	"web/models"
 )
 
 func CategoryRouter(router *gin.RouterGroup) {

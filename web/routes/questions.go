@@ -3,9 +3,9 @@ package routes
 import (
 	"appengine"
 	"github.com/gin-gonic/gin"
-	"models"
 	"net/http"
 	"strconv"
+	"web/models"
 )
 
 func QuestionRouter(router *gin.RouterGroup) {
