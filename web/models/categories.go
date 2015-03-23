@@ -71,6 +71,21 @@ func GetCategoriesByIds(c appengine.Context, ids []int64) ([]Category, error) {
 	return categories, nil
 }
 
+func GetCategory(c appengine.Context, id int64) (*Category, error) {
+	var category Category
+	category.Id = id
+
+	k := category.key(c)
+	err := datastore.Get(c, k, &category)
+	if err != nil {
+		return nil, err
+	}
+
+	category.Id = k.IntID()
+
+	return &category, nil
+}
+
 func NewCategory(c appengine.Context, r io.ReadCloser) (*Category, error) {
 
 	var category Category
@@ -78,6 +93,50 @@ func NewCategory(c appengine.Context, r io.ReadCloser) (*Category, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	err = category.save(c)
+	if err != nil {
+		return nil, err
+	}
+
+	return &category, nil
+
+}
+
+func RemoveCategory(c appengine.Context, id int64) (*Category, error) {
+
+	category, err := GetCategory(c, id)
+	if err != nil {
+		return nil, err
+	}
+
+	err = datastore.Delete(c, category.key(c))
+	if err != nil {
+		return nil, err
+	}
+
+	return category, nil
+
+}
+
+func UpdateCategory(c appengine.Context, id int64, r io.ReadCloser) (*Category, error) {
+
+	var category Category
+	category.Id = id
+
+	k := category.key(c)
+	err := datastore.Get(c, k, &category)
+	if err != nil {
+		return nil, err
+	}
+
+	var cat Category
+	err = json.NewDecoder(r).Decode(&cat)
+	if err != nil {
+		return nil, err
+	}
+
+	category.Name = cat.Name
 
 	err = category.save(c)
 	if err != nil {

@@ -1,0 +1,16 @@
+div.section-body
+  div.section-column.row
+    div.col-sm-4
+      div.section-column-header
+        | Name
+        div.small
+          | What is the category?
+    div.col-sm-8
+      div.col-sm-12
+        input.input-lg.form-control(rows="3" ng-model="category.name")
+  div.section-column.row
+    div.col-sm-12
+      button.btn.btn-primary(ng-click="save()" ng-hide="category.id")
+        | Create
+      button.btn.btn-primary(ng-click="save()" ng-show="category.id")
+        | Save
