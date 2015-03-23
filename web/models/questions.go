@@ -122,3 +122,38 @@ func GetQuestion(c appengine.Context, id int64) (*Question, error) {
 	return &question, nil
 
 }
+
+func UpdateQuestion(c appengine.Context, id int64, r io.ReadCloser) (*Question, error) {
+
+	var question Question
+	question.Id = id
+
+	k := question.key(c)
+	err := datastore.Get(c, k, &question)
+	if err != nil {
+		return nil, err
+	}
+
+	var temp Question
+	err = json.NewDecoder(r).Decode(&temp)
+	if err != nil {
+		return nil, err
+	}
+
+	question.Answer1 = temp.Answer1
+	question.Answer2 = temp.Answer2
+	question.Answer3 = temp.Answer3
+	question.Answer4 = temp.Answer4
+	question.Answer5 = temp.Answer5
+	question.Question = temp.Question
+	question.Explanation = temp.Explanation
+	question.CategoryIds = temp.CategoryIds
+
+	err = question.save(c)
+	if err != nil {
+		return nil, err
+	}
+
+	return &question, nil
+
+}
