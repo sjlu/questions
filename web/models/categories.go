@@ -36,7 +36,7 @@ func (category *Category) save(c appengine.Context) error {
 }
 
 func GetCategories(c appengine.Context) ([]Category, error) {
-	q := datastore.NewQuery("Category")
+	q := datastore.NewQuery("Category").Order("Name")
 
 	var categories []Category
 	keys, err := q.GetAll(c, &categories)
