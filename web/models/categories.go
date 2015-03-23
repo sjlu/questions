@@ -52,14 +52,14 @@ func GetCategories(c appengine.Context) ([]Category, error) {
 }
 
 func GetCategoriesByIds(c appengine.Context, ids []int64) ([]Category, error) {
-	q := datastore.NewQuery("Category")
+	var keys []*datastore.Key
 
 	for _, id := range ids {
-		q.Filter("Id =", id)
+		keys = append(keys, datastore.NewKey(c, "Category", "", id, nil))
 	}
 
-	var categories []Category
-	keys, err := q.GetAll(c, &categories)
+	categories := make([]Category, len(keys))
+	err := datastore.GetMulti(c, keys, categories)
 	if err != nil {
 		return nil, err
 	}
