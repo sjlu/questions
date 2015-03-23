@@ -10,19 +10,20 @@ import (
 )
 
 type Question struct {
-	Id            int64   `json:"id" datastore:"-"`
-	CategoryIds   []int64 `json:"category_ids"`
-	UserId        int64   `json:"user_id"`
-	User          *User   `json:"user" datastore:"-"`
-	Question      string  `json:"question" valid:"required"`
-	Answer1       string  `json:"answer_1" valid:"required"`
-	Answer2       string  `json:"answer_2"`
-	Answer3       string  `json:"answer_3"`
-	Answer4       string  `json:"answer_4"`
-	Answer5       string  `json:"answer_5"`
-	Explanation   string  `json:"explanation" valid:"required"`
-	CorrectAnswer string  `json:"correct_answer" valid:"required"`
-	State         string  `json:"state" valid:"required"`
+	Id            int64      `json:"id" datastore:"-"`
+	CategoryIds   []int64    `json:"category_ids"`
+	Categories    []Category `json:"categories" datastore:"-"`
+	UserId        int64      `json:"user_id"`
+	User          *User      `json:"user" datastore:"-"`
+	Question      string     `json:"question" valid:"required"`
+	Answer1       string     `json:"answer_1" valid:"required"`
+	Answer2       string     `json:"answer_2"`
+	Answer3       string     `json:"answer_3"`
+	Answer4       string     `json:"answer_4"`
+	Answer5       string     `json:"answer_5"`
+	Explanation   string     `json:"explanation" valid:"required"`
+	CorrectAnswer string     `json:"correct_answer" valid:"required"`
+	State         string     `json:"state" valid:"required"`
 }
 
 func (q *Question) key(c appengine.Context) *datastore.Key {
@@ -117,6 +118,14 @@ func GetQuestion(c appengine.Context, id int64) (*Question, error) {
 			return nil, err
 		}
 		question.User = user
+	}
+
+	if question.CategoryIds != nil {
+		categories, err := GetCategoriesByIds(c, question.CategoryIds)
+		if err != nil {
+			return nil, err
+		}
+		question.Categories = categories
 	}
 
 	return &question, nil

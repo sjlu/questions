@@ -51,6 +51,26 @@ func GetCategories(c appengine.Context) ([]Category, error) {
 	return categories, nil
 }
 
+func GetCategoriesByIds(c appengine.Context, ids []int64) ([]Category, error) {
+	q := datastore.NewQuery("Category")
+
+	for _, id := range ids {
+		q.Filter("Id =", id)
+	}
+
+	var categories []Category
+	keys, err := q.GetAll(c, &categories)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := 0; i < len(categories); i++ {
+		categories[i].Id = keys[i].IntID()
+	}
+
+	return categories, nil
+}
+
 func NewCategory(c appengine.Context, r io.ReadCloser) (*Category, error) {
 
 	var category Category

@@ -10,7 +10,7 @@ app.controller('modifyQuestion', function($scope, $http, $location, $routeParams
   if ($routeParams.id) {
     $http.get('/api/questions/' + $routeParams.id).success(function(data) {
       $scope.question = data;
-      $scope.questionCategories = data.categories;
+      $scope.questionCategories = data.categories || [];
     });
   }
 
