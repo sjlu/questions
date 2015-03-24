@@ -94,6 +94,8 @@ func NewCategory(c appengine.Context, r io.ReadCloser) (*Category, error) {
 		return nil, err
 	}
 
+	category.Id = 0
+
 	err = category.save(c)
 	if err != nil {
 		return nil, err

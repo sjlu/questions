@@ -104,6 +104,7 @@ func NewQuestion(c appengine.Context, r io.ReadCloser, user *User) (*Question, e
 		return nil, err
 	}
 
+	question.Id = 0
 	question.UserId = user.Id
 
 	err = question.save(c)
