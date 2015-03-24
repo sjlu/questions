@@ -32,8 +32,21 @@ func loadConfig(file string) {
 }
 
 func init() {
-	loadConfig(".env.local")
-	loadConfig(".env")
+	var config string = ".env"
+	if _, err := os.Stat(".env.local"); os.IsNotExist(err) {
+		config = ".env"
+	} else {
+		if appengine.IsDevAppServer() {
+			config = ".env.local"
+		} else {
+			config = ".env"
+		}
+	}
+
+	err := godotenv.Load(config)
+	if err != nil {
+		log.Fatal("Problem loading configuration file.")
+	}
 
 	r := gin.New()
 	gin.SetMode(gin.ReleaseMode)
