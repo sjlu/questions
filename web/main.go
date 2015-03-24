@@ -19,7 +19,7 @@ import (
 	"web/routes"
 )
 
-var store = sessions.NewCookieStore([]byte("yftcK6tjjW257QkwHuaqUHe8sj3s83Ky"))
+var SessionStore = sessions.NewCookieStore([]byte("yftcK6tjjW257QkwHuaqUHe8sj3s83Ky"))
 
 func loadConfig(file string) {
 	if _, err := os.Stat(file); os.IsNotExist(err) {
@@ -52,7 +52,7 @@ func init() {
 	gin.SetMode(gin.ReleaseMode)
 
 	r.GET("/app", func(c *gin.Context) {
-		session, err := store.Get(c.Request, "testable")
+		session, err := SessionStore.Get(c.Request, "testable")
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
@@ -81,7 +81,7 @@ func init() {
 	}
 
 	r.GET("/logout", func(c *gin.Context) {
-		session, err := store.Get(c.Request, "testable")
+		session, err := SessionStore.Get(c.Request, "testable")
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
@@ -94,7 +94,7 @@ func init() {
 
 	login := r.Group("/login")
 	login.GET("/", func(c *gin.Context) {
-		session, err := store.Get(c.Request, "testable")
+		session, err := SessionStore.Get(c.Request, "testable")
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
@@ -155,7 +155,7 @@ func init() {
 			return
 		}
 
-		session, err := store.Get(c.Request, "testable")
+		session, err := SessionStore.Get(c.Request, "testable")
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
@@ -167,27 +167,7 @@ func init() {
 	})
 
 	api := r.Group("/api")
-	api.Use(func(c *gin.Context) {
-		session, err := store.Get(c.Request, "testable")
-		if err != nil {
-			c.String(http.StatusInternalServerError, err.Error())
-			return
-		}
-
-		if session.Values["id"] == nil {
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-
-		id := session.Values["id"].(int64)
-		user, err := models.GetUser(appengine.NewContext(c.Request), id)
-		if err != nil {
-			c.String(http.StatusInternalServerError, err.Error())
-			return
-		}
-
-		c.Set("user", user)
-	})
+	api.Use(routes.RequiresUser)
 
 	routes.CategoryRouter(api.Group("/categories"))
 	routes.QuestionRouter(api.Group("/questions"))

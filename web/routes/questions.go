@@ -55,7 +55,7 @@ func QuestionRouter(router *gin.RouterGroup) {
 		user := GetUserFromContext(c)
 
 		if user.Role != "admin" && question.UserId != user.Id {
-			c.String(http.StatusForbidden, "")
+			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
 
@@ -77,7 +77,7 @@ func QuestionRouter(router *gin.RouterGroup) {
 
 		user := GetUserFromContext(c)
 		if user.Role != "admin" && question.UserId != user.Id {
-			c.String(http.StatusForbidden, "")
+			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
 

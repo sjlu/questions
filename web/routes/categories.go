@@ -20,7 +20,7 @@ func CategoryRouter(router *gin.RouterGroup) {
 		c.JSON(http.StatusOK, categories)
 	})
 
-	router.POST("/", func(c *gin.Context) {
+	router.POST("/", RequiresAdmin, func(c *gin.Context) {
 		category, err := models.NewCategory(appengine.NewContext(c.Request), c.Request.Body)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
@@ -29,7 +29,7 @@ func CategoryRouter(router *gin.RouterGroup) {
 		c.JSON(http.StatusOK, category)
 	})
 
-	router.GET("/:id", func(c *gin.Context) {
+	router.GET("/:id", RequiresAdmin, func(c *gin.Context) {
 		id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 64)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
@@ -45,7 +45,7 @@ func CategoryRouter(router *gin.RouterGroup) {
 		c.JSON(http.StatusOK, category)
 	})
 
-	router.DELETE("/:id", func(c *gin.Context) {
+	router.DELETE("/:id", RequiresAdmin, func(c *gin.Context) {
 		id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 64)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
@@ -61,7 +61,7 @@ func CategoryRouter(router *gin.RouterGroup) {
 		c.JSON(http.StatusOK, category)
 	})
 
-	router.PUT("/:id", func(c *gin.Context) {
+	router.PUT("/:id", RequiresAdmin, func(c *gin.Context) {
 		id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 64)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
