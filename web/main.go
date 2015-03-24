@@ -58,7 +58,7 @@ func init() {
 			return
 		}
 
-		if session.Values["id"] == 0 {
+		if session.Values["id"] == nil {
 			c.Redirect(http.StatusTemporaryRedirect, "/login")
 			return
 		}
@@ -80,8 +80,31 @@ func init() {
 		panic(err)
 	}
 
+	r.GET("/logout", func(c *gin.Context) {
+		session, err := store.Get(c.Request, "testable")
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+		session.Values["id"] = nil
+		session.Save(c.Request, c.Writer)
+
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+	})
+
 	login := r.Group("/login")
 	login.GET("/", func(c *gin.Context) {
+		session, err := store.Get(c.Request, "testable")
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		if session.Values["id"] != nil {
+			c.Redirect(http.StatusTemporaryRedirect, "/app")
+			return
+		}
+
 		t := new(urlfetch.Transport)
 		t.Context = appengine.NewContext(c.Request)
 		common.SetRoundTripper(t)
