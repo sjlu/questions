@@ -126,7 +126,7 @@ func init() {
 		name := user.Name()
 		email := user.Email()
 
-		_, err = models.CreateUser(appengine.NewContext(c.Request), id, name, email)
+		_, err = models.CreateOrUpdateUser(appengine.NewContext(c.Request), id, name, email)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return

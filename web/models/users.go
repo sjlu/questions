@@ -12,6 +12,7 @@ type User struct {
 	Id    int64  `json:"id" datastore:"-"`
 	Name  string `json:"name" valid:"required"`
 	Email string `json:"email" valid:"required,email"`
+	Role  string `json:"role"`
 }
 
 func (user *User) key(c appengine.Context) *datastore.Key {
@@ -19,6 +20,10 @@ func (user *User) key(c appengine.Context) *datastore.Key {
 }
 
 func (user *User) save(c appengine.Context) error {
+	if user.Role == "" {
+		user.Role = "user"
+	}
+
 	_, err := govalidator.ValidateStruct(user)
 	if err != nil {
 		return err
@@ -63,13 +68,12 @@ func GetUser(c appengine.Context, id int64) (*User, error) {
 	return &user, nil
 }
 
-func CreateUser(c appengine.Context, id int64, name string, email string) (*User, error) {
-	user := User{
-		Id:    id,
-		Name:  name,
-		Email: email,
-	}
+func CreateOrUpdateUser(c appengine.Context, id int64, name string, email string) (*User, error) {
+	user, err := GetUser(c, id)
 
-	err := user.save(c)
-	return &user, err
+	user.Email = email
+	user.Name = name
+
+	err = user.save(c)
+	return user, err
 }
