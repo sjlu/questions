@@ -17,7 +17,8 @@ div.questions
     div.datablock
       div.small
         | Owner
-      | {{question.user.name}}
+      a(ng-href="https://facebook.com/{{question.user.id}}")
+        | {{question.user.name}}
     br
     div.datablock
       div.small
