@@ -11,7 +11,15 @@ import (
 func QuestionRouter(router *gin.RouterGroup) {
 
 	router.GET("/", func(c *gin.Context) {
-		questions, err := models.GetQuestions(appengine.NewContext(c.Request))
+		user := GetUserFromContext(c)
+
+		var err error
+		var questions []models.Question
+		if user.Role == "admin" {
+			questions, err = models.GetQuestions(appengine.NewContext(c.Request))
+		} else {
+			questions, err = models.GetQuestionsByUser(appengine.NewContext(c.Request), user.Id)
+		}
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
@@ -44,6 +52,13 @@ func QuestionRouter(router *gin.RouterGroup) {
 			return
 		}
 
+		user := GetUserFromContext(c)
+
+		if user.Role != "admin" && question.UserId != user.Id {
+			c.String(http.StatusForbidden, "")
+			return
+		}
+
 		c.JSON(http.StatusOK, question)
 	})
 
@@ -51,6 +66,18 @@ func QuestionRouter(router *gin.RouterGroup) {
 		id, err := strconv.ParseInt(c.Params.ByName("id"), 10, 64)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		question, err := models.GetQuestion(appengine.NewContext(c.Request), id)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		user := GetUserFromContext(c)
+		if user.Role != "admin" && question.UserId != user.Id {
+			c.String(http.StatusForbidden, "")
 			return
 		}
 

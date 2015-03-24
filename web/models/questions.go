@@ -80,6 +80,22 @@ func GetQuestions(c appengine.Context) ([]Question, error) {
 	return questions, nil
 }
 
+func GetQuestionsByUser(c appengine.Context, userId int64) ([]Question, error) {
+	q := datastore.NewQuery("Question").Filter("UserId =", userId)
+
+	var questions []Question
+	keys, err := q.GetAll(c, &questions)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := 0; i < len(questions); i++ {
+		questions[i].Id = keys[i].IntID()
+	}
+
+	return questions, nil
+}
+
 func NewQuestion(c appengine.Context, r io.ReadCloser, user *User) (*Question, error) {
 
 	var question Question
