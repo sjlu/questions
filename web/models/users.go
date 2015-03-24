@@ -71,6 +71,12 @@ func GetUser(c appengine.Context, id int64) (*User, error) {
 func CreateOrUpdateUser(c appengine.Context, id int64, name string, email string) (*User, error) {
 	user, err := GetUser(c, id)
 
+	if user == nil {
+		user = &User{
+			Id: id,
+		}
+	}
+
 	user.Email = email
 	user.Name = name
 
