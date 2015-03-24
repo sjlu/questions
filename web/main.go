@@ -5,12 +5,15 @@ import (
 	"appengine/urlfetch"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/sessions"
+	"github.com/joho/godotenv"
 	"github.com/stretchr/gomniauth"
 	"github.com/stretchr/gomniauth/common"
 	"github.com/stretchr/gomniauth/providers/facebook"
 	"github.com/stretchr/objx"
 	"html/template"
+	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"web/models"
 	"web/routes"
@@ -18,7 +21,19 @@ import (
 
 var store = sessions.NewCookieStore([]byte("yftcK6tjjW257QkwHuaqUHe8sj3s83Ky"))
 
+func loadConfig(file string) {
+	if _, err := os.Stat(file); os.IsNotExist(err) {
+		return
+	}
+	err := godotenv.Load(file)
+	if err != nil {
+		log.Fatal("Problem loading configuration file.")
+	}
+}
+
 func init() {
+	loadConfig(".env.local")
+	loadConfig(".env")
 
 	r := gin.New()
 	gin.SetMode(gin.ReleaseMode)
@@ -42,9 +57,9 @@ func init() {
 	gomniauth.SetSecurityKey("mJ8zwRBQZqvakN2BT6CuVKQD8gxYXW8X")
 	gomniauth.WithProviders(
 		facebook.New(
-			"1616407611915270",
-			"6c0555b73ee505405926d83ff4f8ba7c",
-			"http://localhost:8080/login/callback",
+			os.Getenv("FACEBOOK_APP_ID"),
+			os.Getenv("FACEBOOK_APP_SECRET"),
+			os.Getenv("FACEBOOK_CALLBACK_URL"),
 		),
 	)
 	provider, err := gomniauth.Provider("facebook")
