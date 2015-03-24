@@ -2,5 +2,5 @@
 set -e
 npm install
 npm prune
-npm build
+npm run build
 goapp deploy
