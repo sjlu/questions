@@ -3,6 +3,7 @@ package routes
 import (
 	"appengine"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"strconv"
 	"web/models"
@@ -11,7 +12,19 @@ import (
 func QuestionRouter(router *gin.RouterGroup) {
 
 	router.GET("/", func(c *gin.Context) {
-		// categoryId := c.Request.Form.Get("category_id")
+		c.Request.ParseForm()
+		categoryIdString := c.Request.Form.Get("category_id")
+		var categoryId int64
+		categoryId = 0
+		var err error
+
+		if categoryIdString != "" {
+			categoryId, err = strconv.ParseInt(categoryIdString, 10, 64)
+			if err != nil {
+				c.String(http.StatusInternalServerError, err.Error())
+				return
+			}
+		}
 
 		user := GetUserFromContext(c)
 		userId := user.Id
@@ -19,9 +32,8 @@ func QuestionRouter(router *gin.RouterGroup) {
 			userId = 0
 		}
 
-		var err error
 		var questions []models.Question
-		questions, err = models.GetQuestions(appengine.NewContext(c.Request), userId)
+		questions, err = models.GetQuestions(appengine.NewContext(c.Request), userId, categoryId)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return

@@ -64,11 +64,15 @@ func (q *Question) save(c appengine.Context) error {
 	return nil
 }
 
-func GetQuestions(c appengine.Context, userId int64) ([]Question, error) {
+func GetQuestions(c appengine.Context, userId int64, categoryId int64) ([]Question, error) {
 	q := datastore.NewQuery("Question")
 
 	if userId != 0 {
 		q = q.Filter("UserId =", userId)
+	}
+
+	if categoryId != 0 {
+		q = q.Filter("CategoryIds =", categoryId)
 	}
 
 	var questions []Question
