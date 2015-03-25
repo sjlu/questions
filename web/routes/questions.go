@@ -11,15 +11,17 @@ import (
 func QuestionRouter(router *gin.RouterGroup) {
 
 	router.GET("/", func(c *gin.Context) {
+		// categoryId := c.Request.Form.Get("category_id")
+
 		user := GetUserFromContext(c)
+		userId := user.Id
+		if user.Role == "admin" {
+			userId = 0
+		}
 
 		var err error
 		var questions []models.Question
-		if user.Role == "admin" {
-			questions, err = models.GetQuestions(appengine.NewContext(c.Request))
-		} else {
-			questions, err = models.GetQuestionsByUser(appengine.NewContext(c.Request), user.Id)
-		}
+		questions, err = models.GetQuestions(appengine.NewContext(c.Request), userId)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return

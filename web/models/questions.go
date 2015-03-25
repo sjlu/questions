@@ -64,24 +64,12 @@ func (q *Question) save(c appengine.Context) error {
 	return nil
 }
 
-func GetQuestions(c appengine.Context) ([]Question, error) {
+func GetQuestions(c appengine.Context, userId int64) ([]Question, error) {
 	q := datastore.NewQuery("Question")
 
-	var questions []Question
-	keys, err := q.GetAll(c, &questions)
-	if err != nil {
-		return nil, err
+	if userId != 0 {
+		q = q.Filter("UserId =", userId)
 	}
-
-	for i := 0; i < len(questions); i++ {
-		questions[i].Id = keys[i].IntID()
-	}
-
-	return questions, nil
-}
-
-func GetQuestionsByUser(c appengine.Context, userId int64) ([]Question, error) {
-	q := datastore.NewQuery("Question").Filter("UserId =", userId)
 
 	var questions []Question
 	keys, err := q.GetAll(c, &questions)
