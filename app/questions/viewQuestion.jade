@@ -71,22 +71,22 @@ div.questions
       div.small
         | Explanation
       | {{question.explanation}}
-    hr
-    div.datablock
-      div.small
-        | Comments
-    div.row
-      div.col-sm-8
-        div.comment(ng-repeat="comment in comments")
-          table
-            tr
-              td
-                img(ng-src="{{comment.user.gravatar}}")
-              td
-                div.text
-                  | {{comment.comment}}
-                div.timestamp
-                  | {{comment.user.name}} {{comment.createdAt}}
-        textarea.form-control(rows="3" ng-keypress="detectSubmit($event)" ng-model="comment" ng-disabled="commentInputDisabled")
+    //- hr
+    //- div.datablock
+    //-   div.small
+    //-     | Comments
+    //- div.row
+    //-   div.col-sm-8
+    //-     div.comment(ng-repeat="comment in comments")
+    //-       table
+    //-         tr
+    //-           td
+    //-             img(ng-src="{{comment.user.gravatar}}")
+    //-           td
+    //-             div.text
+    //-               | {{comment.comment}}
+    //-             div.timestamp
+    //-               | {{comment.user.name}} {{comment.createdAt}}
+    //-     textarea.form-control(rows="3" ng-keypress="detectSubmit($event)" ng-model="comment" ng-disabled="commentInputDisabled")
     br
     br
