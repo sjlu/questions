@@ -32,14 +32,14 @@ func loadConfig(file string) {
 }
 
 func init() {
-	var config string = ".env"
+	var config string = "env"
 	if _, err := os.Stat(".env.local"); os.IsNotExist(err) {
-		config = ".env"
+		config = "env"
 	} else {
 		if appengine.IsDevAppServer() {
-			config = ".env.local"
+			config = "env.local"
 		} else {
-			config = ".env"
+			config = "env"
 		}
 	}
 
@@ -51,6 +51,10 @@ func init() {
 	r := gin.New()
 	gin.SetMode(gin.ReleaseMode)
 
+	r.GET("/", func(c *gin.Context) {
+		r.SetHTMLTemplate(template.Must(template.ParseFiles("templates/layout.tmpl", "templates/homepage.tmpl")))
+		c.HTML(http.StatusOK, "layout", nil)
+	})
 	r.GET("/app", func(c *gin.Context) {
 		session, err := SessionStore.Get(c.Request, "testable")
 		if err != nil {
@@ -64,7 +68,7 @@ func init() {
 		}
 
 		r.SetHTMLTemplate(template.Must(template.ParseFiles("templates/layout.tmpl", "templates/app.tmpl")))
-		c.HTML(200, "layout", nil)
+		c.HTML(http.StatusOK, "layout", nil)
 	})
 
 	gomniauth.SetSecurityKey("mJ8zwRBQZqvakN2BT6CuVKQD8gxYXW8X")

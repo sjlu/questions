@@ -3,7 +3,6 @@ package routes
 import (
 	"appengine"
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
 	"strconv"
 	"web/models"
