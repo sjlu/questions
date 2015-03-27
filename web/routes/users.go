@@ -19,15 +19,10 @@ func GetUserFromContext(c *gin.Context) *models.User {
 	return u.(*models.User)
 }
 
-func RequiresUser(c *gin.Context) {
+func GetUser(c *gin.Context) {
 	session, err := SessionStore.Get(c.Request, "testable")
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	if session.Values["id"] == nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
@@ -38,7 +33,17 @@ func RequiresUser(c *gin.Context) {
 		return
 	}
 
-	c.Set("user", user)
+	if user != nil {
+		c.Set("user", user)
+	}
+}
+
+func RequiresUser(c *gin.Context) {
+	user := GetUserFromContext(c)
+	if user == nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 }
 
 func RequiresAdmin(c *gin.Context) {

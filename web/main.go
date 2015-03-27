@@ -33,7 +33,7 @@ func loadConfig(file string) {
 
 func init() {
 	var config string = "env"
-	if _, err := os.Stat(".env.local"); os.IsNotExist(err) {
+	if _, err := os.Stat("env.local"); os.IsNotExist(err) {
 		config = "env"
 	} else {
 		if appengine.IsDevAppServer() {
@@ -51,11 +51,19 @@ func init() {
 	r := gin.New()
 	gin.SetMode(gin.ReleaseMode)
 
+	//
+	// middleware
+	//
+	r.Use(routes.GetUser)
+
+	//
+	// page routes
+	//
 	r.GET("/", func(c *gin.Context) {
 		r.SetHTMLTemplate(template.Must(template.ParseFiles("templates/layout.tmpl", "templates/homepage.tmpl")))
 		c.HTML(http.StatusOK, "layout", nil)
 	})
-	r.GET("/app", func(c *gin.Context) {
+	r.GET("/app", routes.RequiresUser, func(c *gin.Context) {
 		session, err := SessionStore.Get(c.Request, "testable")
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
@@ -71,6 +79,9 @@ func init() {
 		c.HTML(http.StatusOK, "layout", nil)
 	})
 
+	//
+	// authentication
+	//
 	gomniauth.SetSecurityKey("mJ8zwRBQZqvakN2BT6CuVKQD8gxYXW8X")
 	gomniauth.WithProviders(
 		facebook.New(
@@ -170,11 +181,17 @@ func init() {
 		c.Redirect(http.StatusTemporaryRedirect, "/app")
 	})
 
+	//
+	// api endpoints
+	//
 	api := r.Group("/api")
 	api.Use(routes.RequiresUser)
 
 	routes.CategoryRouter(api.Group("/categories"))
 	routes.QuestionRouter(api.Group("/questions"))
 
+	//
+	// http router init
+	//
 	http.Handle("/", r)
 }
