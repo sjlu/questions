@@ -60,12 +60,19 @@ func GetCategoriesByIds(c appengine.Context, ids []int64) ([]Category, error) {
 
 	categories := make([]Category, len(keys))
 	err := datastore.GetMulti(c, keys, categories)
-	if err != nil {
-		return nil, err
-	}
-
 	for i := 0; i < len(categories); i++ {
 		categories[i].Id = keys[i].IntID()
+	}
+	if err != nil {
+		if multiErr, ok := err.(appengine.MultiError); ok {
+			for i, e := range multiErr {
+				if e == datastore.ErrNoSuchEntity {
+					categories = append(categories[:i], categories[i+1:]...)
+				} else if e != nil {
+					return nil, multiErr
+				}
+			}
+		}
 	}
 
 	return categories, nil
