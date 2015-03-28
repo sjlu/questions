@@ -172,7 +172,7 @@ func init() {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"token": token.Id})
+		c.JSON(http.StatusOK, gin.H{"token": strconv.FormatInt(token.Id, 10)})
 	})
 	login.GET("/callback", func(c *gin.Context) {
 		t := new(urlfetch.Transport)
