@@ -5,6 +5,7 @@ import (
 	"appengine/urlfetch"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/sessions"
+	fb "github.com/huandu/facebook"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/gomniauth"
 	"github.com/stretchr/gomniauth/common"
@@ -132,6 +133,42 @@ func init() {
 		}
 
 		c.Redirect(http.StatusTemporaryRedirect, authUrl)
+	})
+	login.POST("/token", func(c *gin.Context) {
+		c.Request.ParseForm()
+		acccessToken := c.Request.Form.Get("FBAccessToken")
+
+		session := &fb.Session{}
+		session.HttpClient = urlfetch.Client(appengine.NewContext(c.Request))
+		session.SetAccessToken(acccessToken)
+
+		me, err := session.Get("/me", nil)
+		if err != nil {
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		id, err := strconv.ParseInt(me["id"].(string), 10, 64)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+		name := me["name"].(string)
+		email := me["email"].(string)
+
+		user, err := models.CreateOrUpdateUser(appengine.NewContext(c.Request), id, name, email)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		token, err := models.NewToken(appengine.NewContext(c.Request), user)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"token": token.Id})
 	})
 	login.GET("/callback", func(c *gin.Context) {
 		t := new(urlfetch.Transport)

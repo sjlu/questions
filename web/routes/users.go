@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/sessions"
 	"net/http"
+	"strconv"
 	"web/models"
 )
 
@@ -20,13 +21,38 @@ func GetUserFromContext(c *gin.Context) *models.User {
 }
 
 func GetUser(c *gin.Context) {
-	session, err := SessionStore.Get(c.Request, "testable")
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
+	var id int64
+
+	authToken := c.Request.Header.Get("authentication-token")
+	if authToken != "" {
+		tokenId, err := strconv.ParseInt(authToken, 10, 64)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		token, err := models.GetToken(appengine.NewContext(c.Request), tokenId)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		id = token.UserId
+	} else {
+		session, err := SessionStore.Get(c.Request, "testable")
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		var ok bool
+		id, ok = session.Values["id"].(int64)
+		if !ok {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
 	}
 
-	id := session.Values["id"].(int64)
 	user, err := models.GetUser(appengine.NewContext(c.Request), id)
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
