@@ -135,16 +135,20 @@ func init() {
 		c.Redirect(http.StatusTemporaryRedirect, authUrl)
 	})
 	login.POST("/token", func(c *gin.Context) {
-		c.Request.ParseForm()
-		acccessToken := c.Request.Form.Get("FBAccessToken")
+		var json struct {
+			FBAccessToken string `form:"FBAccessToken"`
+		}
+		c.Bind(&json)
+
+		accessToken := json.FBAccessToken
 
 		session := &fb.Session{}
 		session.HttpClient = urlfetch.Client(appengine.NewContext(c.Request))
-		session.SetAccessToken(acccessToken)
+		session.SetAccessToken(accessToken)
 
 		me, err := session.Get("/me", nil)
 		if err != nil {
-			c.AbortWithStatus(http.StatusInternalServerError)
+			c.String(http.StatusInternalServerError, err.Error())
 			return
 		}
 
