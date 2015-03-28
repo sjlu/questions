@@ -136,7 +136,7 @@ func init() {
 	})
 	login.POST("/token", func(c *gin.Context) {
 		var json struct {
-			FBAccessToken string `form:"FBAccessToken"`
+			FBAccessToken string `json:"FBAccessToken"`
 		}
 		c.Bind(&json)
 
