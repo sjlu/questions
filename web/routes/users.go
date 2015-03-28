@@ -45,18 +45,25 @@ func GetUser(c *gin.Context) {
 			return
 		}
 
-		var ok bool
-		id, ok = session.Values["id"].(int64)
-		if !ok {
-			c.String(http.StatusInternalServerError, err.Error())
-			return
+		idString := session.Values["id"]
+		if idString != nil {
+			var ok bool
+			id, ok = session.Values["id"].(int64)
+			if !ok {
+				c.String(http.StatusInternalServerError, err.Error())
+				return
+			}
 		}
 	}
 
-	user, err := models.GetUser(appengine.NewContext(c.Request), id)
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
+	var user *models.User
+	if id != 0 {
+		var err error
+		user, err = models.GetUser(appengine.NewContext(c.Request), id)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
 	}
 
 	if user != nil {
